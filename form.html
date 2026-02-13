@@ -1,0 +1,396 @@
+<div class="row g-5">
+    <div class="col-md-5  order-md-last">
+        <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-primary">Your cart</span>
+            <span class="badge bg-primary rounded-pill">3</span>
+        </h4>
+        <ul class="list-group mb-3" id="destinyForm1">
+            <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                    <h6 class="my-0">Product name</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">$12</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                    <h6 class="my-0">Second product</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">$8</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                    <h6 class="my-0">Third item</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">$5</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between bg-light">
+                <div class="text-success">
+                    <h6 class="my-0">Promo code</h6>
+                    <small>EXAMPLECODE</small>
+                </div>
+                <span class="text-success">−$5</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Total (USD)</span>
+                <strong>$20</strong>
+            </li>
+        </ul>
+
+        <form class="card p-2">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Promo code">
+                <button type="submit" class="btn btn-secondary">Redeem</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-7 ">
+
+        <h4 class="mb-3">Exemplo 1</h4>
+        <form class="needs-validation" novalidate="" id="actionForm-complete">
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label for="firstName" class="form-label">First name</label>
+                    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="" value=""
+                           required="required">
+                    <div class="invalid-feedback">
+                        Valid first name is required.
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <label for="lastName" class="form-label">Last name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" placeholder="" value=""
+                           required="required">
+                    <div class="invalid-feedback">
+                        Valid last name is required.
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group has-validation">
+                        <span class="input-group-text">@</span>
+                        <input type="text" class="form-control" id="username" name="Username" placeholder="Username"
+                               required="required">
+                        <div class="invalid-feedback">
+                            Your username is required.
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-12">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="1234 Main St"
+                           required="required">
+                    <div class="invalid-feedback">
+                        Please enter your shipping address.
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <label for="country" class="form-label">Country</label>
+                    <select class="form-select" id="country" name="country" required="required">
+                        <option value="">Choose...</option>
+                        <option>United States</option>
+                        <option>Brazil</option>
+                        <option>Canada</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a valid country.
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="state" class="form-label">State</label>
+                    <select class="form-select" id="state" name="state" required="required">
+                        <option value="">Choose...</option>
+                        <option>California</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please provide a valid state.
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="zip" class="form-label">Zip</label>
+                    <input type="text" class="form-control" id="zip" placeholder="" name="zip" required="required">
+                    <div class="invalid-feedback">
+                        Zip code required.
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="form-check">
+                <input type="checkbox" name="same-address" class="form-check-input" id="same-address"
+                       required="required">
+                <label class="form-check-label" for="same-address">Shipping address is the same as my billing
+                    address</label>
+            </div>
+
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="save-info" name="save-info" required="required">
+                <label class="form-check-label" for="save-info">Save this information for next time</label>
+            </div>
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Default file input example</label>
+                <input class="form-control" name="formFile" type="file" id="formFile">
+            </div>
+            <hr class="my-4">
+
+            <h4 class="mb-3">Payment</h4>
+
+            <div class="my-3">
+                <div class="form-check">
+                    <input id="credit" name="paymentMethod" type="radio" class="form-check-input" required="required">
+                    <label class="form-check-label" for="credit">Credit card</label>
+                </div>
+                <div class="form-check">
+                    <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required="required">
+                    <label class="form-check-label" for="debit">Debit card</label>
+                </div>
+                <div class="form-check">
+                    <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required="required">
+                    <label class="form-check-label" for="paypal">PayPal</label>
+                </div>
+            </div>
+
+
+            <hr class="my-4">
+
+            <button class="w-100 btn btn-primary btn-lg"
+                    type="button"
+                    data-zld-log="true"
+                    data-zld-url="./form-content.php"
+                    data-zld-destiny-id="destinyForm1"
+                    data-zld-catch-group-id="actionForm-complete"
+            >Continue to checkout
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<br><br><br><br>
+<hr>
+<h4>
+    HTML (data-zld-*) — OFFICIAL STANDARD
+</h4>
+<br>
+<pre>
+  <span class="pl-kos">&lt;</span><span class="pl-ent">button</span>
+  <span class="pl-c1">  type</span>="<span class="pl-s">button</span>"
+  <span class="pl-c1">  data-zld-url</span>="<span class="pl-s">./form-content.php</span>"
+  <span class="pl-c1">  data-zld-destiny-id</span>="<span class="pl-s">destinyForm</span>"
+  <span class="pl-c1">  data-zld-catch-group-id</span>="<span class="pl-s">actionForm</span>"
+  <span class="pl-c1">  class</span>="<span class="pl-s">btn btn-primary</span>"<span class="pl-kos">&gt;</span>
+  Submit
+<span class="pl-kos">&lt;/</span><span class="pl-ent">button</span><span class="pl-kos">&gt;</span></pre>
+
+<br>
+<div class="row">
+    <div class="col-md-7 ">
+
+
+        <div class="row g-3" id="actionFormNew">
+            <div class="col-sm-6">
+                <label for="firstName" class="form-label">First name</label>
+                <input type="text" class="form-control" name="firstName" placeholder="" value="Thomaz" required="">
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label for="lastName" class="form-label">Last name</label>
+                <input type="text" class="form-control" name="lastName" placeholder="" value="Ozi" required="">
+                <div class="invalid-feedback">
+                    Valid last name is required.
+                </div>
+            </div>
+            <button type="button"
+                    data-zld-url="./form-content.php"
+                    data-zld-destiny-id="destinyFormNew"
+                    data-zld-Catch-group-id="actionFormNew"
+                    class="btn btn-primary">Submit
+            </button>
+        </div>
+    </div>
+    <div class="col-md-5 ">
+        Res:
+        <div id="destinyFormNew"></div>
+
+    </div>
+</div>
+
+<hr>
+<h5>
+    Multiplo encapsulamento por IDs para envio de dados
+</h5>
+<pre>
+          <span class="pl-kos">&lt;</span><span class="pl-ent">button</span>
+          <span class="pl-c1">  type</span>="<span class="pl-s">button</span>"
+          <span class="pl-c1">  data-zld-url</span>="<span class="pl-s">./form-content.php</span>"
+          <span class="pl-c1">  data-zld-destiny-id</span>="<span class="pl-s">destinyForm</span>"
+          <span class="pl-c1">  data-zld-catch-group-id</span>="<span
+        class="pl-s">actionForm-multiA,actionForm-multiB</span>"
+          <span class="pl-c1">  class</span>="<span class="pl-s">btn btn-primary</span>"<span class="pl-kos">&gt;</span>
+          Submit
+        <span class="pl-kos">&lt;/</span><span class="pl-ent">button</span><span class="pl-kos">&gt;</span>
+        </pre>
+<div class="row">
+    <div class="col-md-7 ">
+
+
+        <div class="row g-3" id="actionForm-multiA">
+            <div class="col-12 mt-4">id="actionForm-multiA"</div>
+            <div class="col-sm-6">
+                <label for="service" class="form-label">Client</label>
+                <input type="text" class="form-control" id="client" name="client" placeholder="" value="Ambev"
+                       required="">
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label for="supplier" class="form-label">Supplier </label>
+                <input type="text" class="form-control" id="supplier" name="supplier" placeholder="" value="Sabesp"
+                       required="">
+                <div class="invalid-feedback">
+                    Valid last name is required.
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row g-3" id="actionForm-multiB">
+            <div class="col-12 mt-4">id="actionForm-multiB"</div>
+            <div class="col-sm-6">
+                <label for="service" class="form-label">Service</label>
+                <input type="text" class="form-control" id="Service" name="Service" placeholder="" value="" required="">
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label for="product" class="form-label">product</label>
+                <input type="text" class="form-control" id="product" name="product" placeholder=""
+                       value="computers, notebooks, cell phones" required="">
+                <div class="invalid-feedback">
+                    Valid last name is required.
+                </div>
+            </div>
+            <button type="button"
+                    data-zld-url="./form-content.php"
+                    data-zld-destiny-id="destinyFormMulti"
+                    data-zld-Catch-group-id="actionForm-multiA, actionForm-multiB"
+                    class="btn btn-primary">Submit
+            </button>
+        </div>
+
+    </div>
+    <div class="col-md-5 ">
+        Res:
+        <div id="destinyFormMulti">ddd</div>
+
+    </div>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<hr>
+<h4>
+    JavaScript (CURRENT)
+</h4>
+<pre><span class="pl-en">oziLoadData</span><span class="pl-kos">(</span><span class="pl-kos">{</span>
+  <span class="pl-c1">  zldUrl</span>: <span class="pl-s">'./form-content.php'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">  zldDestinyId</span>: <span class="pl-s">'destinyForm'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">  zldCatchGroupId</span>: <span class="pl-kos">[</span><span class="pl-s">'actionForm'</span><span
+            class="pl-kos">]</span><span class="pl-kos">,</span>
+  <span class="pl-c1">  zldCatchItemName</span>: <span class="pl-s">['inputA:valueA','inputB:valueB']</span><span
+            class="pl-kos">,</span>
+<span class="pl-kos">}</span><span class="pl-kos">)</span><span class="pl-kos">;</span></pre>
+<div class="row">
+    <div class="col-md-7 ">
+        <div class="row g-3" id="actionFormZ2">
+            <div class="col-sm-12">
+                <label for="friends" class="form-label">Friends</label>
+                <input type="text" class="form-control" name="friends" id="friends" placeholder=""
+                       value="Luis Guilherme, Ovaldo, Otavio, Deyvidi, Caio" required="">
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+
+            <button type="button"
+                    onclick="oziLoadData({
+                    zldUrl:'./form-content.php',
+                    zldDestinyId:'destinyFormJavascript',
+                    zldCatchGroupId:['actionFormZ2'],
+                    zldCatchItemName:['inputA:valueA','inputB:valueB'],
+                })" class="btn btn-primary">Submit
+            </button>
+        </div>
+    </div>
+    <div class="col-md-5 ">
+        Res:
+        <div id="destinyFormJavascript">Content</div>
+
+    </div>
+</div>
+<br><br><br><br>
+<hr>
+<h3>
+    JavaScript (LEGACY – compatible)
+</h3>
+<pre><span class="pl-en">oziLoadData</span><span class="pl-kos">(</span><span class="pl-kos">{</span>
+  <span class="pl-c1">ldUrl</span>: <span class="pl-s">'./form-content.php'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">ldDestinyId</span>: <span class="pl-s">'DestinyForm'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">ldCatchGroupId</span>: <span class="pl-kos">[</span><span class="pl-s">'actionForm2'</span><span
+            class="pl-kos">]</span><span class="pl-kos">,</span>
+  <span class="pl-c1">ldCatchItemName</span>: <span class="pl-s">'teste:555'</span><span class="pl-kos">,</span>
+<span class="pl-kos">}</span><span class="pl-kos">)</span><span class="pl-kos">;</span></pre>
+
+<div class="row">
+    <div class="col-md-7 ">
+        <div class="row g-3" id="actionFormLEGACY">
+            <div class="col-sm-6">
+                <label for="captain" class="form-label">Captain</label>
+                <input type="text" class="form-control" name="captain" id="captain" placeholder="" value="Patrick Stewart" required="">
+                <div class="invalid-feedback">
+                    Valid first name is required.
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <label for="tenenteComandante" class="form-label">Tenente-Comandante</label>
+                <input type="text" class="form-control" name="tenenteComandante" id="tenenteComandante" placeholder="" value="Dr. Noonian Soong" required="">
+                <div class="invalid-feedback">
+                    Valid last name is required.
+                </div>
+            </div>
+            <button type="button"
+                    onclick="oziLoadData({
+                    ldUrl:'./form-content.php',
+                    ldDestinyId:'destinyFormdestinyFormLEGACY',
+                    ldCatchGroupId:'actionFormLEGACY',
+                    ldCatchItemName:'inputLegacy:star-trek',
+                })" class="btn btn-primary">Submit
+            </button>
+        </div>
+    </div>
+    <div class="col-md-5 ">
+        Res:
+        <div id="destinyFormdestinyFormLEGACY">Content</div>
+
+    </div>
+</div>
+<div id="DestinyForm"></div>
