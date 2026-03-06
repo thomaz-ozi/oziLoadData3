@@ -106,7 +106,7 @@ No `<form>` tag is required.
 ### Multiple Groups
 
 ```html
-data-zld-catch-group-id="['actionFormA','actionFormB']"
+data-zld-catch-group-id="actionFormA,actionFormB"
 ```
 
 ---
@@ -126,7 +126,7 @@ data-zld-catch-item-name="token"
 ### Multiple fields
 
 ```html
-data-zld-catch-item-name="['token','id']"
+data-zld-catch-item-name="token,id"
 ```
 
 ### Fixed value
