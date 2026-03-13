@@ -2,11 +2,9 @@
 // Right sidebar options
 // ==============================================================
 /**
- * oziLoadData
+ * oziLoadData Ver: (3.2)
  * --------------------------------------------------------------------------
- * --------------------------------------------------------------------------
- * Ver: (3.0)
- * data: 2026-02-25
+ * data: 2026-03-06
  * --------------------------------------------------------------------------
  */
 
@@ -542,43 +540,7 @@ function zldClickCatch(e) {
  Não carrega dados (load data)
 
 */
-$(document).on('input', '[data-ozi-search]', function () {
-    const $input = $(this);
 
-    const value = String($input.val() ?? '')
-        .toLowerCase()
-        .trim();
-
-    const rawSelector = String($input.data('ozi-search') ?? '').trim();
-    if (!rawSelector) return;
-
-    const minAttr = parseInt($input.data('ozi-search-min'), 10);
-    const minLen = Number.isFinite(minAttr) ? minAttr : 2;
-
-    // Aceita:
-    // data-ozi-search="minha-classe"  -> vira ".minha-classe"
-    // data-ozi-search=".minha-classe" -> usa como está
-    // data-ozi-search="#lista .item"  -> usa como está
-    const isSelector = /^[.#\[\]:]|[\s,>+~]/.test(rawSelector);
-    const selector = isSelector ? rawSelector : `.${rawSelector}`;
-
-    const $items = $(selector);
-
-    if (value.length === 0) {
-        $items.show();
-        return;
-    }
-
-    if (value.length < minLen) {
-        $items.show();
-        return;
-    }
-
-    $items.each(function () {
-        const text = String(this.textContent ?? '').toLowerCase();
-        this.style.display = text.includes(value) ? '' : 'none';
-    });
-});
 
 function zldGenerateId() {
     return +Date.now() + Math.floor(Math.random() * 10000);
@@ -1163,7 +1125,222 @@ function renderDependencies(root, loadData, phase) {
 
 
 /**
- * oziLoadDataConf
+ * ------------------------------------------
+ * oziSearch
+ * -------------------------------------------
+ * Ver: (1.0)
+ * 2026-03-11
+ * --------------------------------------------
+ *
+ *
+ * data-ozi-search            → define onde buscar
+ * data-ozi-search-min        → mínimo de caracteres antes de filtrar
+ * data-ozi-search-multi      → true busca multi-palavra
+ * data-ozi-search-highlight  → true highlight e/ou define classes do highlight
+ */
+
+(function () {
+    const DEFAULT_HIGHLIGHT_CLASS = 'bg-dark text-white rounded px-1';
+
+    function escapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function normalizeTerms(value, multi) {
+        const terms = multi
+            ? String(value).trim().split(/\s+/).filter(Boolean)
+            : [String(value).trim()].filter(Boolean);
+
+        return [...new Set(terms)]
+            .filter(term => term.length > 0)
+            .sort((a, b) => b.length - a.length);
+    }
+
+    function clearHighlights(container) {
+        const spans = container.querySelectorAll('span');
+
+        spans.forEach(span => {
+            if (!span.__oziSearchMark) return;
+
+            const parent = span.parentNode;
+            if (!parent) return;
+
+            while (span.firstChild) {
+                parent.insertBefore(span.firstChild, span);
+            }
+
+            parent.removeChild(span);
+            parent.normalize();
+        });
+    }
+    function hasMarkedAncestor(node) {
+        let current = node.parentNode;
+
+        while (current) {
+            if (current.__oziSearchMark) return true;
+            current = current.parentNode;
+        }
+
+        return false;
+    }
+    function buildRegex(terms) {
+        if (!terms.length) return null;
+        const pattern = terms.map(term => escapeRegExp(term)).join('|');
+        return new RegExp(`(${pattern})`, 'gi');
+    }
+
+    function highlightInElement(container, terms, highlightClass) {
+        clearHighlights(container);
+
+        const regex = buildRegex(terms);
+        if (!regex) return;
+
+        const walker = document.createTreeWalker(
+            container,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode(node) {
+                    if (!node.nodeValue || !node.nodeValue.trim()) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    const parent = node.parentNode;
+                    if (!parent || parent.nodeType !== 1) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    const tag = parent.tagName;
+                    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA'].includes(tag)) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    if (hasMarkedAncestor(node)) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        const textNodes = [];
+        let current;
+
+        while ((current = walker.nextNode())) {
+            textNodes.push(current);
+        }
+
+        textNodes.forEach(textNode => {
+            const text = textNode.nodeValue;
+            regex.lastIndex = 0;
+
+            if (!regex.test(text)) return;
+
+            regex.lastIndex = 0;
+
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let match;
+
+            while ((match = regex.exec(text)) !== null) {
+                const start = match.index;
+                const end = start + match[0].length;
+
+                if (start > lastIndex) {
+                    fragment.appendChild(
+                        document.createTextNode(text.slice(lastIndex, start))
+                    );
+                }
+
+                const span = document.createElement('span');
+                span.className = highlightClass;
+                span.textContent = text.slice(start, end);
+                span.__oziSearchMark = true;
+
+                fragment.appendChild(span);
+                lastIndex = end;
+            }
+
+            if (lastIndex < text.length) {
+                fragment.appendChild(
+                    document.createTextNode(text.slice(lastIndex))
+                );
+            }
+
+            textNode.parentNode.replaceChild(fragment, textNode);
+        });
+    }
+
+    function resolveItems(rawSelector) {
+        let $items = $(rawSelector);
+
+        if (!$items.length && !/[.#\[\]:\s,>+~]/.test(rawSelector)) {
+            $items = $(`.${rawSelector}`);
+        }
+
+        return $items;
+    }
+
+    $(document).on('input', '[data-ozi-search]', function () {
+        const $input = $(this);
+
+        const rawValue = String($input.val() ?? '').trim();
+        const value = rawValue.toLowerCase();
+
+        const rawSelector = String($input.attr('data-ozi-search') ?? '').trim();
+        if (!rawSelector) return;
+
+        const minAttr = parseInt($input.attr('data-ozi-search-min'), 10);
+        const minLen = Number.isNaN(minAttr) ? 1 : minAttr;
+
+        const multiAttr = $input.attr('data-ozi-search-multi');
+        const multi = multiAttr !== undefined && multiAttr !== 'false';
+
+
+        const highlightAttr = $input.attr('data-ozi-search-highlight');
+        const highlightEnabled = highlightAttr !== undefined;
+
+        const rawHighlight = String(highlightAttr ?? '').trim().toLowerCase();
+
+        const highlightClass = (
+            !highlightEnabled || rawHighlight === '' || rawHighlight === 'true' || rawHighlight === '1'
+        )
+            ? DEFAULT_HIGHLIGHT_CLASS
+            : String(highlightAttr).trim();
+
+
+
+        const $items = resolveItems(rawSelector);
+        if (!$items.length) return;
+
+        $items.each(function () {
+            clearHighlights(this);
+        });
+
+        if (value.length === 0 || value.length < minLen) {
+            $items.show();
+            return;
+        }
+
+        const terms = normalizeTerms(rawValue, multi);
+
+        $items.each(function () {
+            const text = String(this.textContent ?? '').toLowerCase().trim();
+
+            const match = multi
+                ? terms.some(term => text.includes(term.toLowerCase()))
+                : text.includes(value);
+
+            $(this).toggle(match);
+
+            if (match && highlightEnabled) {
+                highlightInElement(this, terms, highlightClass);
+            }
+        });
+    });
+})();
+/**
+ * oziConf
  * --------
  * - zldProgressBarGlobalClass: classe que recebe o evento da barra de progresso global
  * - zldProgressBarGlobalOption: true|false → ativa ou desativa a barra de progresso global
@@ -1193,12 +1370,18 @@ const zldConf = {
     },
 };
 
+const oziConfData = {
+    oziSearchHighlight: "bd-dark text-white",
+};
 
-function oziLoadDataConf(conf = {}) {
-    zldConf.zldProgressBarGlobalOption = conf.zldProgressBarGlobalOption ?? zldConf.zldProgressBarGlobalOption ?? true;
-    zldConf.zldProgressBarGlobalClass = conf.zldProgressBarGlobalClass ?? zldConf.zldProgressBarGlobalClass ?? 'progress-bar-global';
-    zldConf.zldResponseValidClass = conf.zldResponseValidClass ?? zldConf.zldResponseValidClass ?? 'is-valid';
-    zldConf.zldResponseInvalidClass = conf.zldResponseInvalidClass ?? zldConf.zldResponseInvalidClass ?? 'is-invalid';
+function oziConf(conf = {}) {
+    zldConf.zldProgressBarGlobalOption = conf.zldProgressBarGlobalOption ?? zldConf.zldProgressBarGlobalOption;
+    zldConf.zldProgressBarGlobalClass = conf.zldProgressBarGlobalClass ?? zldConf.zldProgressBarGlobalClass;
+    zldConf.zldResponseValidClass = conf.zldResponseValidClass ?? zldConf.zldResponseValidClass;
+    zldConf.zldResponseInvalidClass = conf.zldResponseInvalidClass ?? zldConf.zldResponseInvalidClass;
+
+    oziConfData.oziSearchHighlight = conf.oziSearchHighlight ?? oziConfData.oziSearchHighlight;
+
 
     // Auto init
     if (conf.zldAutoInit) {
@@ -1215,6 +1398,4 @@ function oziLoadDataConf(conf = {}) {
             zldConf.zldHooks.afterRender = conf.zldHooks.afterRender;
         }
     }
-
-    return zldConf;
 }
