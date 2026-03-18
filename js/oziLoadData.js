@@ -1146,7 +1146,7 @@ function renderDependencies(root, loadData, phase) {
         return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    function normalizeTerms(value, multi) {
+    function oziSearchNormalizeTerms(value, multi) {
         const terms = multi
             ? String(value).trim().split(/\s+/).filter(Boolean)
             : [String(value).trim()].filter(Boolean);
@@ -1156,7 +1156,7 @@ function renderDependencies(root, loadData, phase) {
             .sort((a, b) => b.length - a.length);
     }
 
-    function clearHighlights(container) {
+    function oziSearchClearHighlights(container) {
         const spans = container.querySelectorAll('span');
 
         spans.forEach(span => {
@@ -1173,7 +1173,7 @@ function renderDependencies(root, loadData, phase) {
             parent.normalize();
         });
     }
-    function hasMarkedAncestor(node) {
+    function oziSearchHasMarkedAncestor(node) {
         let current = node.parentNode;
 
         while (current) {
@@ -1189,8 +1189,8 @@ function renderDependencies(root, loadData, phase) {
         return new RegExp(`(${pattern})`, 'gi');
     }
 
-    function highlightInElement(container, terms, highlightClass) {
-        clearHighlights(container);
+    function oziSearchHighlightInElement(container, terms, highlightClass) {
+        oziSearchClearHighlights(container);
 
         const regex = buildRegex(terms);
         if (!regex) return;
@@ -1214,7 +1214,7 @@ function renderDependencies(root, loadData, phase) {
                         return NodeFilter.FILTER_REJECT;
                     }
 
-                    if (hasMarkedAncestor(node)) {
+                    if (oziSearchHasMarkedAncestor(node)) {
                         return NodeFilter.FILTER_REJECT;
                     }
 
@@ -1271,7 +1271,7 @@ function renderDependencies(root, loadData, phase) {
         });
     }
 
-    function resolveItems(rawSelector) {
+    function oziSearchResolveItems(rawSelector) {
         let $items = $(rawSelector);
 
         if (!$items.length && !/[.#\[\]:\s,>+~]/.test(rawSelector)) {
@@ -1310,11 +1310,11 @@ function renderDependencies(root, loadData, phase) {
 
 
 
-        const $items = resolveItems(rawSelector);
+        const $items = oziSearchResolveItems(rawSelector);
         if (!$items.length) return;
 
         $items.each(function () {
-            clearHighlights(this);
+            oziSearchClearHighlights(this);
         });
 
         if (value.length === 0 || value.length < minLen) {
@@ -1322,7 +1322,7 @@ function renderDependencies(root, loadData, phase) {
             return;
         }
 
-        const terms = normalizeTerms(rawValue, multi);
+        const terms = oziSearchNormalizeTerms(rawValue, multi);
 
         $items.each(function () {
             const text = String(this.textContent ?? '').toLowerCase().trim();
@@ -1334,7 +1334,7 @@ function renderDependencies(root, loadData, phase) {
             $(this).toggle(match);
 
             if (match && highlightEnabled) {
-                highlightInElement(this, terms, highlightClass);
+                oziSearchHighlightInElement(this, terms, highlightClass);
             }
         });
     });
