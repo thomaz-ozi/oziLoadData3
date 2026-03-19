@@ -1155,17 +1155,13 @@ const zldConf = {
     },
 };
 
-const oziConfData = {
-    oziSearchHighlight: "bd-dark text-white",
-};
+
 
 function oziConf(conf = {}) {
     zldConf.zldProgressBarGlobalOption = conf.zldProgressBarGlobalOption ?? zldConf.zldProgressBarGlobalOption;
     zldConf.zldProgressBarGlobalClass = conf.zldProgressBarGlobalClass ?? zldConf.zldProgressBarGlobalClass;
     zldConf.zldResponseValidClass = conf.zldResponseValidClass ?? zldConf.zldResponseValidClass;
     zldConf.zldResponseInvalidClass = conf.zldResponseInvalidClass ?? zldConf.zldResponseInvalidClass;
-
-    oziConfData.oziSearchHighlight = conf.oziSearchHighlight ?? oziConfData.oziSearchHighlight;
 
 
     // Auto init
