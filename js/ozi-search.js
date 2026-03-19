@@ -1,126 +1,249 @@
-
 /**
  * ------------------------------------------
  * oziSearch
  * -------------------------------------------
- * Ver: (1.0)
- * 2026-03-11
+ * Ver: (1.3)
+ * 2026-03-18
  * --------------------------------------------
  *
- *
- * data-ozi-search            → define onde buscar
- * data-ozi-search-min        → mínimo de caracteres antes de filtrar
- * data-ozi-search-multi      → true busca multi-palavra
- * data-ozi-search-highlight  → true highlight e/ou define classes do highlight
+ * data-ozi-search            → seletor ou classe dos itens pesquisáveis
+ * data-ozi-search-group      → seletor ou classe dos grupos pais
+ * data-ozi-search-min        → mínimo de caracteres para iniciar a busca
+ * data-ozi-search-words      → habilita busca por múltiplas palavras
+ * data-ozi-search-highlight  → habilita highlight padrão ou recebe classes CSS customizadas
+ * data-ozi-search-no-filter  → mantém todos os itens visíveis e apenas destaca os termos encontrados
  */
 
-
-
-
-(function($) {
-    // Função para normalizar termos de busca
-    function oziSearchNormalizeTerms(terms) {
-        return terms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+(function ($) {
+    function oziSearchIsTrue(value) {
+        return value === true || value === 'true' || value === 1 || value === '1';
     }
 
-    // Função para limpar highlights anteriores
-    function oziSearchClearHighlights(container) {
-        container.find('[__oziSearchMark]').each(function() {
-            const $el = $(this);
-            $el.html($el.text());
-            $el.removeAttr('__oziSearchMark');
+    function oziSearchEscapeRegExp(str) {
+        return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function oziSearchNormalizeTerms(terms) {
+        return terms
+            .map(term => oziSearchEscapeRegExp(term))
+            .sort((a, b) => b.length - a.length)
+            .join('|');
+    }
+
+    function oziSearchResolveElements(rawSelector) {
+        if (!rawSelector) return $();
+
+        let $elements = $(rawSelector);
+
+        if ($elements.length === 0) {
+            $elements = $('.' + rawSelector);
+        }
+
+        return $elements;
+    }
+
+    function oziSearchResolveItems($input) {
+        const rawSelector = String($input.data('ozi-search') || '').trim();
+        return oziSearchResolveElements(rawSelector);
+    }
+
+    function oziSearchResolveGroups($input) {
+        const rawSelector = String($input.data('ozi-search-group') || '').trim();
+        return oziSearchResolveElements(rawSelector);
+    }
+
+    function oziSearchBuildRegex(pattern, globalSearch) {
+        return new RegExp(`(${pattern})`, globalSearch ? 'gi' : 'i');
+    }
+
+    function oziSearchStoreOriginalHtml($items) {
+        $items.each(function () {
+            const $item = $(this);
+
+            if ($item.data('__oziSearchOriginalHtml') === undefined) {
+                $item.data('__oziSearchOriginalHtml', $item.html());
+            }
         });
     }
 
-    // Função para resolver itens baseado no seletor
-    function oziSearchResolveItems($input, rawSelector) {
-        let $items = $(rawSelector);
-        if ($items.length === 0) {
-            $items = $('.' + rawSelector);
-        }
-        return $items;
+    function oziSearchClearHighlights($items) {
+        $items.each(function () {
+            const $item = $(this);
+            const originalHtml = $item.data('__oziSearchOriginalHtml');
+
+            if (originalHtml !== undefined) {
+                $item.html(originalHtml);
+            }
+        });
     }
 
-    // Função para construir regex
-    function oziSearchBuildRegex(pattern) {
-        return new RegExp(`(${pattern})`, 'gi');
-    }
-
-    // Função para aplicar highlight
     function oziSearchApplyHighlight($element, regex, highlightClass) {
+        const root = $element[0];
+        if (!root) return;
+
         const walker = document.createTreeWalker(
-            $element[0],
+            root,
             NodeFilter.SHOW_TEXT,
             {
-                acceptNode: function(node) {
+                acceptNode: function (node) {
                     const parent = node.parentElement;
-                    if (parent && (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE' || parent.tagName === 'NOSCRIPT' || parent.tagName === 'TEXTAREA')) {
+
+                    if (!parent) {
                         return NodeFilter.FILTER_REJECT;
                     }
+
+                    if (
+                        parent.tagName === 'SCRIPT' ||
+                        parent.tagName === 'STYLE' ||
+                        parent.tagName === 'NOSCRIPT' ||
+                        parent.tagName === 'TEXTAREA'
+                    ) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    if (parent.hasAttribute('__oziSearchMark')) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
+                    if (!node.nodeValue || !node.nodeValue.trim()) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+
                     return NodeFilter.FILTER_ACCEPT;
                 }
             }
         );
 
         const nodes = [];
-        let node;
-        while (node = walker.nextNode()) {
-            nodes.push(node);
+        let currentNode;
+
+        while ((currentNode = walker.nextNode())) {
+            nodes.push(currentNode);
         }
 
         nodes.forEach(textNode => {
-            if (textNode.parentElement && !textNode.parentElement.hasAttribute('__oziSearchMark')) {
-                const text = textNode.nodeValue;
-                const highlighted = text.replace(regex, `<span class="${highlightClass}" __oziSearchMark>$1</span>`);
-                if (highlighted !== text) {
-                    $(textNode).replaceWith(highlighted);
-                }
+            const text = textNode.nodeValue;
+
+            regex.lastIndex = 0;
+            if (!regex.test(text)) return;
+
+            regex.lastIndex = 0;
+
+            const highlightedHtml = text.replace(
+                regex,
+                `<span __oziSearchMark class="${highlightClass}">$1</span>`
+            );
+
+            const temp = document.createElement('span');
+            temp.innerHTML = highlightedHtml;
+
+            const fragment = document.createDocumentFragment();
+            while (temp.firstChild) {
+                fragment.appendChild(temp.firstChild);
+            }
+
+            if (textNode.parentNode) {
+                textNode.parentNode.replaceChild(fragment, textNode);
             }
         });
     }
 
-    $(document).on('input', '[data-ozi-search]', function() {
+    function oziSearchUpdateGroups($groups, $items) {
+        if (!$groups.length || !$items.length) return;
+
+        $groups.each(function () {
+            const groupEl = this;
+
+            const hasVisibleItems = $items.filter(function () {
+                return groupEl.contains(this) && $(this).is(':visible');
+            }).length > 0;
+
+            if (hasVisibleItems) {
+                $(groupEl).show();
+            } else {
+                $(groupEl).hide();
+            }
+        });
+    }
+
+    $(document).on('input', '[data-ozi-search]', function () {
         const $input = $(this);
-        const selector = $input.data('ozi-search');
-        const minLength = parseInt($input.data('ozi-search-min')) || 0;
-        const multi = $input.data('ozi-search-multi') === 'true';
-        const noFilter = $input.data('ozi-search-no-filter') === 'true';
+
+        const minLength = parseInt($input.data('ozi-search-min'), 10) || 0;
+        const words = oziSearchIsTrue($input.data('ozi-search-words'));
+        const noFilter = oziSearchIsTrue($input.data('ozi-search-no-filter'));
         const highlight = $input.data('ozi-search-highlight');
-        const highlightClass = (!highlight || highlight === 'true' || highlight === '1') ? 'bg-dark text-white rounded px-1' : highlight;
 
-        const value = $input.val().trim();
-        const $items = oziSearchResolveItems($input, selector);
+        const highlightEnabled =
+            highlight !== undefined &&
+            highlight !== false &&
+            highlight !== 'false' &&
+            highlight !== 0 &&
+            highlight !== '0';
 
-        // Limpar highlights anteriores
+        const highlightClass =
+            !highlight || highlight === true || highlight === 'true' || highlight === '1'
+                ? 'bg-dark text-white rounded px-1'
+                : String(highlight);
+
+        const value = String($input.val() || '').trim();
+        const $items = oziSearchResolveItems($input);
+        const $groups = oziSearchResolveGroups($input);
+
+        if (!$items.length) return;
+
+        oziSearchStoreOriginalHtml($items);
         oziSearchClearHighlights($items);
 
-        if (value.length < minLength || value === '') {
-            // Mostrar todos os itens e remover highlights
+        if (value === '' || value.length < minLength) {
             $items.show();
+            $groups.show();
             return;
         }
 
-        const terms = multi ? value.split(/\s+/).filter(term => term.length > 0) : [value];
+        const terms = words
+            ? value.split(/\s+/).filter(Boolean)
+            : [value];
+
         const pattern = oziSearchNormalizeTerms(terms);
-        const regex = oziSearchBuildRegex(pattern);
+
+        if (!pattern) {
+            $items.show();
+            $groups.show();
+            return;
+        }
+
+        const regexTest = oziSearchBuildRegex(pattern, false);
+        const regexHighlight = oziSearchBuildRegex(pattern, true);
 
         if (noFilter) {
-            // Apenas highlight, sem filtrar
-            $items.each(function() {
-                oziSearchApplyHighlight($(this), regex, highlightClass);
-            });
-        } else {
-            // Filtrar e highlight
-            $items.each(function() {
-                const $item = $(this);
-                const text = $item.text();
-                if (regex.test(text)) {
-                    oziSearchApplyHighlight($item, regex, highlightClass);
-                    $item.show();
-                } else {
-                    $item.hide();
-                }
-            });
+            $items.show();
+            $groups.show();
+
+            if (highlightEnabled) {
+                $items.each(function () {
+                    oziSearchApplyHighlight($(this), regexHighlight, highlightClass);
+                });
+            }
+
+            return;
         }
+
+        $items.each(function () {
+            const $item = $(this);
+            const text = $item.text();
+
+            if (regexTest.test(text)) {
+                $item.show();
+
+                if (highlightEnabled) {
+                    oziSearchApplyHighlight($item, regexHighlight, highlightClass);
+                }
+            } else {
+                $item.hide();
+            }
+        });
+
+        oziSearchUpdateGroups($groups, $items);
     });
 })(jQuery);
