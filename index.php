@@ -11,9 +11,7 @@
 
 
     <!-- Bootstrap core CSS -->
-    <!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">-->
-    <link href="./bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="./bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet"    >
 
     <!-- Favicons -->
     <meta name="theme-color" content="#7952b3">
@@ -67,7 +65,7 @@
         crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="./js/oziLoadData.js"></script>
-<!--<script src="./js/oziLoadData-old.js"></script>-->
+<script src="./js/ozi-search.js"></script>
 
 <script>
     // const conf = oziLoadDataConf({

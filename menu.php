@@ -14,8 +14,27 @@
                data-zld-url="home.php"
                data-zld-destiny-id="mainContainer"
                data-zld-catch-itemName="about:nome"
-             >Home</a></li>
+            >Home</a></li>
 
+
+        <li class="nav-item">
+            <a href="#" class="nav-link"
+               onclick="oziLoadData({
+                    zldUrl:'form.html',
+                    zldDestinyId:'mainContainer',
+                   zldCatchItenName:['formularios:nome']
+                }, null, this)">Formularios
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#"
+               class="nav-link "
+               aria-current="page"
+               data-zld-url="search.php"
+               data-zld-destiny-id="mainContainer"
+            >Pesquisa
+            </a>
+        </li>
         <li class="nav-item">
             <a href="#" class="nav-link" onclick="oziLoadData({
                     ldUrl:'description.php',
@@ -25,14 +44,6 @@
                 Descrição
             </a>
         </li>
-
-        <li class="nav-item">
-            <a href="#" class="nav-link"
-               onclick="oziLoadData({
-                    zldUrl:'form.html',
-                    zldDestinyId:'mainContainer',
-                   zldCatchItenName:['formularios:nome']
-                }, null, this)">Formularios</a></li>
         <li class="nav-item">
             <a href="#" class="nav-link"
                onclick="oziLoadData({

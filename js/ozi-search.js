@@ -2,16 +2,19 @@
  * ------------------------------------------
  * oziSearch
  * -------------------------------------------
- * Ver: (1.3)
+ * Ver: (1.4)
  * 2026-03-18
  * --------------------------------------------
  *
- * data-ozi-search            → seletor ou classe dos itens pesquisáveis
- * data-ozi-search-group      → seletor ou classe dos grupos pais
- * data-ozi-search-min        → mínimo de caracteres para iniciar a busca
- * data-ozi-search-words      → habilita busca por múltiplas palavras
- * data-ozi-search-highlight  → habilita highlight padrão ou recebe classes CSS customizadas
- * data-ozi-search-no-filter  → mantém todos os itens visíveis e apenas destaca os termos encontrados
+ * data-ozi-search            → define os itens onde a busca será aplicada
+ * data-ozi-search-group      → define os grupos pais que devem ser ocultados quando não houver itens visíveis
+ * data-ozi-search-menu       → define a estrutura de menu hierárquico e a classe de colapso
+ *                              ex: "pesqMenu, hidden" | "pesqMenu, mm-collapse"
+ * data-ozi-search-min        → quantidade mínima de caracteres antes de iniciar a busca
+ * data-ozi-search-words      → true ativa a busca por múltiplas palavras
+ * data-ozi-search-highlight  → true aplica o highlight padrão, ou recebe classes CSS para customizar o destaque
+ *                              ex: "bg-warning text-dark fw-bold"
+ * data-ozi-search-no-filter  → true apenas destaca os termos encontrados, sem ocultar os itens
  */
 
 (function ($) {
@@ -31,11 +34,14 @@
     }
 
     function oziSearchResolveElements(rawSelector) {
+        rawSelector = String(rawSelector || '').trim();
         if (!rawSelector) return $();
+
+        const isSelector = /^[.#\[\]:]/.test(rawSelector) || /[\s>+~]/.test(rawSelector);
 
         let $elements = $(rawSelector);
 
-        if ($elements.length === 0) {
+        if ($elements.length === 0 && !isSelector) {
             $elements = $('.' + rawSelector);
         }
 
@@ -43,13 +49,43 @@
     }
 
     function oziSearchResolveItems($input) {
-        const rawSelector = String($input.data('ozi-search') || '').trim();
-        return oziSearchResolveElements(rawSelector);
+        return oziSearchResolveElements($input.data('ozi-search'));
     }
 
     function oziSearchResolveGroups($input) {
-        const rawSelector = String($input.data('ozi-search-group') || '').trim();
-        return oziSearchResolveElements(rawSelector);
+        return oziSearchResolveElements($input.data('ozi-search-group'));
+    }
+
+    function oziSearchParseMenuConfig(rawValue) {
+        rawValue = String(rawValue || '').trim();
+        if (!rawValue) return null;
+
+        const parts = rawValue
+            .split(',')
+            .map(part => String(part).trim())
+            .filter(Boolean);
+
+        if (!parts.length) return null;
+
+        let menuSelector = parts[0];
+        const isSelector = /^[.#\[\]:]/.test(menuSelector) || /[\s>+~]/.test(menuSelector);
+
+        if (!isSelector) {
+            menuSelector = '.' + menuSelector;
+        }
+
+        let collapseClass = parts[1] || 'hidden';
+        collapseClass = collapseClass.replace(/^\./, '').trim();
+
+        return {
+            menuSelector,
+            collapseClass
+        };
+    }
+
+    function oziSearchResolveMenuBlocks($input, menuConfig) {
+        if (!menuConfig) return $();
+        return oziSearchResolveElements(menuConfig.menuSelector);
     }
 
     function oziSearchBuildRegex(pattern, globalSearch) {
@@ -73,6 +109,31 @@
 
             if (originalHtml !== undefined) {
                 $item.html(originalHtml);
+            }
+        });
+    }
+
+    function oziSearchStoreOriginalVisibility($elements) {
+        $elements.each(function () {
+            const $el = $(this);
+
+            if ($el.data('__oziSearchOriginalVisible') !== undefined) return;
+
+            $el.data('__oziSearchOriginalVisible', $el.is(':visible') ? '1' : '0');
+            $el.data('__oziSearchOriginalInlineDisplay', this.style.display || '');
+        });
+    }
+
+    function oziSearchRestoreVisibility($elements) {
+        $elements.each(function () {
+            const $el = $(this);
+            const originalVisible = $el.data('__oziSearchOriginalVisible') !== '0';
+            const originalInlineDisplay = $el.data('__oziSearchOriginalInlineDisplay');
+
+            if (originalVisible) {
+                this.style.display = originalInlineDisplay || '';
+            } else {
+                this.style.display = 'none';
             }
         });
     }
@@ -148,21 +209,133 @@
         });
     }
 
+    function oziSearchStoreMenuState($menuBlocks, menuConfig) {
+        if (!$menuBlocks.length || !menuConfig) return;
+
+        const $allMenuBlocks = $menuBlocks
+            .filter(menuConfig.menuSelector)
+            .add($menuBlocks.find(menuConfig.menuSelector));
+
+        oziSearchStoreOriginalVisibility($allMenuBlocks);
+
+        const collapseSelector = '.' + menuConfig.collapseClass;
+
+        $allMenuBlocks.find(collapseSelector).each(function () {
+            const $el = $(this);
+
+            if ($el.data('__oziSearchOriginalCollapsed') !== undefined) return;
+
+            $el.data('__oziSearchOriginalCollapsed', '1');
+        });
+    }
+
+    function oziSearchRestoreMenu($menuBlocks, menuConfig) {
+        if (!$menuBlocks.length || !menuConfig) return;
+
+        const $allMenuBlocks = $menuBlocks
+            .filter(menuConfig.menuSelector)
+            .add($menuBlocks.find(menuConfig.menuSelector));
+
+        oziSearchRestoreVisibility($allMenuBlocks);
+
+        $allMenuBlocks.find('*').each(function () {
+            const $el = $(this);
+            const originalCollapsed = $el.data('__oziSearchOriginalCollapsed');
+
+            if (originalCollapsed === undefined) return;
+
+            if (originalCollapsed === '1') {
+                $el.addClass(menuConfig.collapseClass);
+            } else {
+                $el.removeClass(menuConfig.collapseClass);
+            }
+        });
+    }
+
     function oziSearchUpdateGroups($groups, $items) {
         if (!$groups.length || !$items.length) return;
 
         $groups.each(function () {
-            const groupEl = this;
+            const $group = $(this);
+
+            if ($group.data('__oziSearchOriginalVisible') === '0') {
+                $group.hide();
+                return;
+            }
 
             const hasVisibleItems = $items.filter(function () {
-                return groupEl.contains(this) && $(this).is(':visible');
+                return $.contains($group[0], this) && $(this).is(':visible');
             }).length > 0;
 
             if (hasVisibleItems) {
-                $(groupEl).show();
+                $group.show();
             } else {
-                $(groupEl).hide();
+                $group.hide();
             }
+        });
+    }
+
+    function oziSearchUpdateMenu($menuBlocks, $items, menuConfig) {
+        if (!$menuBlocks.length || !$items.length || !menuConfig) return;
+
+        const $allMenuBlocks = $menuBlocks
+            .filter(menuConfig.menuSelector)
+            .add($menuBlocks.find(menuConfig.menuSelector));
+
+        $allMenuBlocks.find('*').each(function () {
+            const $el = $(this);
+            const originalCollapsed = $el.data('__oziSearchOriginalCollapsed');
+
+            if (originalCollapsed === undefined) return;
+
+            if (originalCollapsed === '1') {
+                $el.addClass(menuConfig.collapseClass);
+            } else {
+                $el.removeClass(menuConfig.collapseClass);
+            }
+        });
+
+        const orderedBlocks = $(
+            $allMenuBlocks.get().sort(function (a, b) {
+                return $(b).parents(menuConfig.menuSelector).length - $(a).parents(menuConfig.menuSelector).length;
+            })
+        );
+
+        orderedBlocks.each(function () {
+            const $block = $(this);
+
+            if ($block.data('__oziSearchOriginalVisible') === '0') {
+                $block.hide();
+                return;
+            }
+
+            const hasVisibleItems = $items.filter(function () {
+                return $.contains($block[0], this) && $(this).is(':visible');
+            }).length > 0;
+
+            if (hasVisibleItems) {
+                $block.show();
+            } else {
+                $block.hide();
+            }
+        });
+
+        const collapseSelector = '.' + menuConfig.collapseClass;
+
+        $items.filter(':visible').each(function () {
+            const $item = $(this);
+
+            $item.parents(menuConfig.menuSelector).each(function () {
+                const $block = $(this);
+
+                if ($block.data('__oziSearchOriginalVisible') !== '0') {
+                    $block.show();
+                }
+            });
+
+            $item.parents(collapseSelector).each(function () {
+                $(this).removeClass(menuConfig.collapseClass).show();
+            });
         });
     }
 
@@ -186,18 +359,26 @@
                 ? 'bg-dark text-white rounded px-1'
                 : String(highlight);
 
-        const value = String($input.val() || '').trim();
+        const menuConfig = oziSearchParseMenuConfig($input.data('ozi-search-menu'));
         const $items = oziSearchResolveItems($input);
         const $groups = oziSearchResolveGroups($input);
+        const $menuBlocks = oziSearchResolveMenuBlocks($input, menuConfig);
 
         if (!$items.length) return;
 
         oziSearchStoreOriginalHtml($items);
         oziSearchClearHighlights($items);
 
+        oziSearchStoreOriginalVisibility($items);
+        oziSearchStoreOriginalVisibility($groups);
+        oziSearchStoreMenuState($menuBlocks, menuConfig);
+
+        const value = String($input.val() || '').trim();
+
         if (value === '' || value.length < minLength) {
-            $items.show();
-            $groups.show();
+            oziSearchRestoreVisibility($items);
+            oziSearchRestoreVisibility($groups);
+            oziSearchRestoreMenu($menuBlocks, menuConfig);
             return;
         }
 
@@ -208,8 +389,9 @@
         const pattern = oziSearchNormalizeTerms(terms);
 
         if (!pattern) {
-            $items.show();
-            $groups.show();
+            oziSearchRestoreVisibility($items);
+            oziSearchRestoreVisibility($groups);
+            oziSearchRestoreMenu($menuBlocks, menuConfig);
             return;
         }
 
@@ -217,11 +399,12 @@
         const regexHighlight = oziSearchBuildRegex(pattern, true);
 
         if (noFilter) {
-            $items.show();
-            $groups.show();
+            oziSearchRestoreVisibility($items);
+            oziSearchRestoreVisibility($groups);
+            oziSearchRestoreMenu($menuBlocks, menuConfig);
 
             if (highlightEnabled) {
-                $items.each(function () {
+                $items.filter(':visible').each(function () {
                     oziSearchApplyHighlight($(this), regexHighlight, highlightClass);
                 });
             }
@@ -231,6 +414,12 @@
 
         $items.each(function () {
             const $item = $(this);
+
+            if ($item.data('__oziSearchOriginalVisible') === '0') {
+                $item.hide();
+                return;
+            }
+
             const text = $item.text();
 
             if (regexTest.test(text)) {
@@ -244,6 +433,7 @@
             }
         });
 
+        oziSearchUpdateMenu($menuBlocks, $items, menuConfig);
         oziSearchUpdateGroups($groups, $items);
     });
 })(jQuery);
