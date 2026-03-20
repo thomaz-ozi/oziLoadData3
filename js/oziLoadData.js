@@ -9,39 +9,61 @@
  * Ver: (3.4)
  * 2026-03-06
  * ------------------------------------------
+ * @description
+ * Realiza coleta, envio e tratamento de dados em diferentes modos de execução,
+ * com suporte a destino visual, integração com API e controle de comportamento.
+ *
+ * RECURSOS
+ * envio dinâmico       → suporta envio nos modos fetch, window e page
+ * coleta flexível      → coleta dados por grupo, item individual ou JSON
+ * resposta visual      → envia retorno para um destino específico no DOM
+ * integração com API   → facilita chamadas orientadas a dados
+ * limpeza de formulário→ limpa campos após envio quando configurado
+ * controle de clique   → evita múltiplas ações durante a requisição
+ * suporte a debug      → exibe logs detalhados para análise do fluxo
  *
  * [1] ENVIO
- * zldUrl             → define o endereço de envio
- * zldMode            → define o modo de envio: fetch, window ou page
- * zldModeMethod      → define o método da requisição: GET ou POST
- * zldModePageTarget  → define o alvo da página: _self, _blank, _parent, _top ou framename
+ * zldUrl            → define o endereço de envio
+ * zldMode           → define o modo de envio: fetch, window ou page
+ * zldModeMethod     → define o método da requisição: GET ou POST
+ * zldModePageTarget → define o alvo da página: _self, _blank, _parent, _top ou framename
  *
  * [2] COLETA DE DADOS
- * zldCatchGroupId    → coleta os dados dentro do id informado
- * zldCatchItemName   → coleta itens individuais pelo atributo name
- * zldJson            → envia dados estruturados em Array ou JSON string junto com o FormData
- * zldCheckbox        → define ou auxilia o tratamento de valores de checkbox
+ * zldCatchGroupId   → coleta os dados dentro do id informado
+ * zldCatchItemName  → coleta itens individuais pelo atributo name
+ * zldJson           → envia dados estruturados em Array ou JSON string junto com o FormData
+ * zldCheckbox       → define ou auxilia o tratamento de valores de checkbox
  *
  * [3] RESPOSTA / DESTINO
- * zldDestinyId       → define o destino da resposta
- * zldDestinyAppend   → adiciona a resposta no destino informado
- * zldDestinyBefore   → insere a resposta antes do destino informado
- * zldExpectJson      → ajusta headers para JSON e facilita integração com Laravel
- * zldApi             → define a chamada como modo API, voltada para resposta em dados
+ * zldDestinyId      → define o destino da resposta
+ * zldDestinyAppend  → adiciona a resposta no destino informado
+ * zldDestinyBefore  → insere a resposta antes do destino informado
+ * zldExpectJson     → ajusta headers para JSON e facilita integração com Laravel
+ * zldApi            → define a chamada como modo API, voltada para resposta em dados
  *
  * [4] COMPORTAMENTO / UX
- * zldFormBusy        → evita múltiplos cliques durante a requisição
- * zldFormClear       → limpa formulários após o envio, exceto campos hidden
- * zldReloadScript    → recarrega scripts da classe ld-reload em cenários legados
+ * zldFormBusy       → evita múltiplos cliques durante a requisição
+ * zldFormClear      → limpa formulários após o envio, exceto campos hidden
+ * zldReloadScript   → recarrega scripts da classe ld-reload em cenários legados
  *
  * [5] DEBUG / SUPORTE
- * zldLog             → ativa logs de depuração no console
+ * zldLog            → ativa logs de depuração no console
  *
- * RETURN
- * response.perm        → 0 = acesso liberado
  *
- * @param data        → objeto de configuração da chamada
- * @param attribute   → atributos auxiliares processados internamente
+ * @param {Object} [data={}] Objeto de configuração da chamada
+ * @param {Object} [attribute={}] Atributos auxiliares processados internamente
+ *
+ * @returns {*} Retorna a resposta processada conforme o modo de execução
+ *
+
+ * @example
+ * const response = oziLoadData({
+ *     zldUrl: '/rota/exemplo',
+ *     zldDestinyId: 'resultado',
+ *     zldCatchGroupId: 'formCadastro',
+ * });
+ *
+ *
  */
 
 if (!window.__zld_inited) {
@@ -1121,15 +1143,26 @@ function renderDependencies(root, loadData, phase) {
 
 
 /**
+ * ------------------------------------------
  * oziConf
- * --------
- * - zldProgressBarGlobalClass: classe que recebe o evento da barra de progresso global
- * - zldProgressBarGlobalOption: true|false → ativa ou desativa a barra de progresso global
- * - zldResponseValidClass: classe personalizada para indicar status válido
- * - zldResponseInvalidClass: classe personalizada para indicar status inválido
+ * ------------------------------------------
+ * Ver: (1.0)
+ * 2026-03-04
+ * ------------------------------------------
+ * @description
+ * Objeto global de configuração do OZI.
  *
+ * zldProgressBarGlobalClass  → define a classe que recebe o evento da barra de progresso global
+ * zldProgressBarGlobalOption → ativa ou desativa a barra de progresso global
+ * zldResponseValidClass      → define a classe personalizada para indicar status válido
+ * zldResponseInvalidClass    → define a classe personalizada para indicar status inválido
  *
- * @type {{}}
+ * @type {{
+ *     zldProgressBarGlobalClass: string,
+ *     zldProgressBarGlobalOption: boolean,
+ *     zldResponseValidClass: string,
+ *     zldResponseInvalidClass: string
+ * }}
  */
 
 //---------------> Configuração <------------------------
@@ -1175,7 +1208,6 @@ function oziConf(conf = {}) {
         }
     }
 }
-
 /**
  * ------------------------------------------
  * oziLoadExternalScript
@@ -1183,7 +1215,7 @@ function oziConf(conf = {}) {
  * Ver: (0.1)
  * 2026-03-20
  * ------------------------------------------
- *
+ * @description
  * Carrega um script externo no <head> do DOM.
  *
  * config.tagName         → define a tag que será criada
@@ -1192,6 +1224,15 @@ function oziConf(conf = {}) {
  * config.crossOrigin     → define a política de origem do recurso
  * config.resourceName    → define o nome exibido no console
  * config.startAfterReady → executa startEvent() após o load e DOM pronto
+ *
+ * @param {{
+ *     tagName?: string,
+ *     src?: string,
+ *     integrity?: string,
+ *     crossOrigin?: string,
+ *     resourceName?: string,
+ *     startAfterReady?: boolean
+ * }} [config={}]
  */
 
 
