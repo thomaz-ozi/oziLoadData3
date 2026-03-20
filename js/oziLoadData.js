@@ -8,44 +8,46 @@
  * --------------------------------------------------------------------------
  */
 
-
 /**
+ * ------------------------------------------
  * oziLoadData
- * ---------------------------
- * [1] ENVIO /
- * - zldUrl: endereço de envio
- * - zldMode: modo de envio → 'fetch' (padrão), 'window', 'page'
- * - zldModeMethod: método → GET ou POST (padrão)
- * - zldModePageTarget: alvo da página → _self, _blank, _parent, _top, framename
+ * ------------------------------------------
+ * Ver: (1.0)
+ * 2026-03-20
+ * ------------------------------------------
+ *
+ * [1] ENVIO
+ * zldUrl             → define o endereço de envio
+ * zldMode            → define o modo de envio: fetch, window ou page
+ * zldModeMethod      → define o método da requisição: GET ou POST
+ * zldModePageTarget  → define o alvo da página: _self, _blank, _parent, _top ou framename
  *
  * [2] COLETA DE DADOS
- * - zldCatchGroupId: coleta dados dentro do ID informado
- * - ldCatchItemName: coleta itens individuais por nome
- * - zldJson: Array | JSON string → envia dados estruturados em JSON junto com o FormData.
- * - zldCheckbox: true | false → define/auxilia o tratamento de valores de checkbox no envio.
+ * zldCatchGroupId    → coleta os dados dentro do id informado
+ * zldCatchItemName   → coleta itens individuais pelo atributo name
+ * zldJson            → envia dados estruturados em Array ou JSON string junto com o FormData
+ * zldCheckbox        → define ou auxilia o tratamento de valores de checkbox
  *
  * [3] RESPOSTA / DESTINO
- * - zldDestinyId: destino da resposta
- * - zldDestinyAppend: true → acrescenta resposta no destino
- * - zldDestinyBefore: true | false → Se true, insere a resposta antes do destino.
- * - zldExpectJson: true | false → Ajusta headers (Accept: application/json) e facilita integração com Laravel.;
- * - zldApi: true | false → define a chamada como modo API (resposta orientada a dados) Usado para endpoints que não retornam HTML para renderização.
+ * zldDestinyId       → define o destino da resposta
+ * zldDestinyAppend   → adiciona a resposta no destino informado
+ * zldDestinyBefore   → insere a resposta antes do destino informado
+ * zldExpectJson      → ajusta headers para JSON e facilita integração com Laravel
+ * zldApi             → define a chamada como modo API, voltada para resposta em dados
  *
  * [4] COMPORTAMENTO / UX
- * - zldFormBusy: true | false → Evita múltiplos cliques durante a requisição.  Quando true, desabilita o botão/trigger temporariamente.
- * - zldFormClear: true | false → limpa formulários (exceto hidden) após envio, removendo também classes de validação.
- * - zldReloadScript: true | false →   recarrega scripts da classe ld-reload (uso legado / cenários específicos)
+ * zldFormBusy        → evita múltiplos cliques durante a requisição
+ * zldFormClear       → limpa formulários após o envio, exceto campos hidden
+ * zldReloadScript    → recarrega scripts da classe ld-reload em cenários legados
  *
- * * [5] DEBUG / SUPORTE
- * - zldLog: true | false → Ativa logs de depuração no console,atributos lidos, payload, fluxo e resposta.
-
- * -----------------------
- * RETORN
- * * EX: let respot = oziLoadData({...
- *  * respot.perm: 0 = acesso liberado;
+ * [5] DEBUG / SUPORTE
+ * zldLog             → ativa logs de depuração no console
  *
- * @param data
- * @param attribute
+ * RETURN
+ * respot.perm        → 0 = acesso liberado
+ *
+ * @param data        → objeto de configuração da chamada
+ * @param attribute   → atributos auxiliares processados internamente
  */
 
 if (!window.__zld_inited) {
@@ -1181,35 +1183,45 @@ function oziConf(conf = {}) {
 }
 
 /**
- * CARREGA DOM LINK EXTERNO
- * --------------------------
- * Versão: 0.1
+ * ------------------------------------------
+ * oziLoadExternalScript
+ * ------------------------------------------
+ * Ver: (0.1)
+ * 2026-03-20
+ * ------------------------------------------
  *
+ * Carrega um script externo no <head> do DOM.
  *
- * startEvent() = é indicado criar sua código dentro da função startEvent();
- * @param data
+ * config.tagName         → define a tag que será criada
+ * config.src             → define a URL do arquivo externo
+ * config.integrity       → define o hash de integridade do recurso
+ * config.crossOrigin     → define a política de origem do recurso
+ * config.resourceName    → define o nome exibido no console
+ * config.startAfterReady → executa startEvent() após o load e DOM pronto
  */
 
-function oziLoadDomSrc(data = {}) {
 
-    data = document.createElement(data.tagName ?? "script");
-    data.src = data.src ?? "https://code.jquery.com/jquery-3.7.1.js";
-    data.integrity = data.integrity ?? "sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=";
-    data.crossOrigin = data.crossOrigin ?? "anonymous";
-    data.nameLink = data.nameLink ?? $.fn.jquery;
-    data.startSfterEvent = data.startSfterEvent ?? false;
+function oziLoadExternalScript(config = {}) {
+    const script = document.createElement(config.tagName ?? "script");
 
-    data.onload = function () {
-        console.log("Carregado:", data.nameLink);
+    script.src = config.src ?? "https://code.jquery.com/jquery-3.7.1.js";
+    script.integrity = config.integrity ?? "sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=";
+    script.crossOrigin = config.crossOrigin ?? "anonymous";
 
-        // Só roda quando o DOM estiver pronto
+    const nameLink = config.nameLink ?? "jQuery";
+    const startAfterEvent = config.startAfterEvent ?? false;
+
+    script.onload = function () {
+        console.log("Carregado:", nameLink);
+
         $(document).ready(function () {
-            console.log("DOM pronto, " + data.nameLink + " disponível!");
-            // Aqui você chama suas funções em jQuery
-            if (data.startSfterEvent) {
+            console.log("DOM pronto, " + nameLink + " disponível!");
+
+            if (startAfterEvent) {
                 startEvent();
             }
         });
     };
-    document.head.appendChild(data);
+
+    document.head.appendChild(script);
 }
