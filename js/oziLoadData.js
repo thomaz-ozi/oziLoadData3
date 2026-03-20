@@ -1202,14 +1202,14 @@ function oziLoadExternalScript(config = {}) {
     script.integrity = config.integrity ?? "sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=";
     script.crossOrigin = config.crossOrigin ?? "anonymous";
 
-    const nameLink = config.nameLink ?? "jQuery";
+    const resourceName = config.resourceName ?? "jQuery";
     const startAfterEvent = config.startAfterEvent ?? false;
 
     script.onload = function () {
-        console.log("Carregado:", nameLink);
+        console.log("Carregado:", resourceName);
 
         $(document).ready(function () {
-            console.log("DOM pronto, " + nameLink + " disponível!");
+            console.log("DOM pronto, " + resourceName + " disponível!");
 
             if (startAfterEvent) {
                 startEvent();
