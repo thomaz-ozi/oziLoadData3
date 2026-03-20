@@ -118,7 +118,7 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
             data?.ldCatchGroupId,
 
 
-        zldCatchItemName: data?.zldCatchItemName ?? data?.ldCatchItemName?? data?.ldCatchItenName,
+        zldCatchItemName: data?.zldCatchItemName ?? data?.ldCatchItemName ?? data?.ldCatchItenName,
 
         zldMode: data?.zldMode ?? data?.ldWay ?? "fetch",
         zldModeMethod: data?.zldModeMethod ?? data?.ldWayPageMethod ?? "POST",
@@ -1156,7 +1156,6 @@ const zldConf = {
 };
 
 
-
 function oziConf(conf = {}) {
     zldConf.zldProgressBarGlobalOption = conf.zldProgressBarGlobalOption ?? zldConf.zldProgressBarGlobalOption;
     zldConf.zldProgressBarGlobalClass = conf.zldProgressBarGlobalClass ?? zldConf.zldProgressBarGlobalClass;
@@ -1179,4 +1178,38 @@ function oziConf(conf = {}) {
             zldConf.zldHooks.afterRender = conf.zldHooks.afterRender;
         }
     }
+}
+
+/**
+ * CARREGA DOM LINK EXTERNO
+ * --------------------------
+ * Versão: 0.1
+ *
+ *
+ * startEvent() = é indicado criar sua código dentro da função startEvent();
+ * @param data
+ */
+
+function oziLoadDomSrc(data = {}) {
+
+    data = document.createElement(data.tagName ?? "script");
+    data.src = data.src ?? "https://code.jquery.com/jquery-3.7.1.js";
+    data.integrity = data.integrity ?? "sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=";
+    data.crossOrigin = data.crossOrigin ?? "anonymous";
+    data.nameLink = data.nameLink ?? $.fn.jquery;
+    data.startSfterEvent = data.startSfterEvent ?? false;
+
+    data.onload = function () {
+        console.log("Carregado:", data.nameLink);
+
+        // Só roda quando o DOM estiver pronto
+        $(document).ready(function () {
+            console.log("DOM pronto, " + data.nameLink + " disponível!");
+            // Aqui você chama suas funções em jQuery
+            if (data.startSfterEvent) {
+                startEvent();
+            }
+        });
+    };
+    document.head.appendChild(data);
 }
