@@ -1,19 +1,13 @@
 // ==============================================================
 // Right sidebar options
 // ==============================================================
-/**
- * oziLoadData Ver: (3.2)
- * --------------------------------------------------------------------------
- * data: 2026-03-06
- * --------------------------------------------------------------------------
- */
 
 /**
  * ------------------------------------------
  * oziLoadData
  * ------------------------------------------
- * Ver: (1.0)
- * 2026-03-20
+ * Ver: (3.4)
+ * 2026-03-06
  * ------------------------------------------
  *
  * [1] ENVIO
@@ -44,7 +38,7 @@
  * zldLog             → ativa logs de depuração no console
  *
  * RETURN
- * respot.perm        → 0 = acesso liberado
+ * response.perm        → 0 = acesso liberado
  *
  * @param data        → objeto de configuração da chamada
  * @param attribute   → atributos auxiliares processados internamente
