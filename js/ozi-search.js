@@ -1,20 +1,51 @@
 /**
  * ------------------------------------------
  * oziSearch
- * -------------------------------------------
+ * ------------------------------------------
  * Ver: (1.4)
  * 2026-03-18
- * --------------------------------------------
+ * ------------------------------------------
+ * @description
+ * Realiza busca textual em listas, grupos e menus hierárquicos,
+ * com suporte a filtro, múltiplas palavras e highlight.
  *
- * data-ozi-search            → define os itens onde a busca será aplicada
- * data-ozi-search-group      → define os grupos pais que devem ser ocultados quando não houver itens visíveis
- * data-ozi-search-menu       → define a estrutura de menu hierárquico e a classe de colapso
- *                              ex: "pesqMenu, hidden" | "pesqMenu, mm-collapse"
- * data-ozi-search-min        → quantidade mínima de caracteres antes de iniciar a busca
- * data-ozi-search-words      → true ativa a busca por múltiplas palavras
- * data-ozi-search-highlight  → true aplica o highlight padrão, ou recebe classes CSS para customizar o destaque
- *                              ex: "bg-warning text-dark fw-bold"
- * data-ozi-search-no-filter  → true apenas destaca os termos encontrados, sem ocultar os itens
+ * RECURSOS
+ * busca simples         → localiza termos em itens visíveis
+ * busca por palavras    → permite procurar múltiplos termos no mesmo campo
+ * highlight             → destaca visualmente os termos encontrados
+ * filtro opcional       → permite apenas destacar sem ocultar itens
+ * grupos dinâmicos      → oculta grupos pais sem itens visíveis
+ * menu hierárquico      → expande e recolhe blocos de menu conforme os resultados
+ *
+ * ATRIBUTOS
+ * data-ozi-search           → define os itens onde a busca será aplicada
+ * data-ozi-search-group     → define os grupos pais que devem ser ocultados quando não houver itens visíveis
+ * data-ozi-search-menu      → define a estrutura de menu hierárquico e a classe de colapso
+ *                             ex: "pesqMenu, hidden" | "pesqMenu, mm-collapse"
+ * data-ozi-search-min       → define a quantidade mínima de caracteres antes de iniciar a busca
+ * data-ozi-search-words     → ativa a busca por múltiplas palavras
+ * data-ozi-search-highlight → ativa o highlight padrão ou recebe classes CSS para personalizar o destaque
+ *                             ex: "bg-warning text-dark fw-bold"
+ * data-ozi-search-no-filter → destaca os termos encontrados sem ocultar os itens
+ *
+ * COMPORTAMENTO
+ * busca vazia           → restaura o estado original dos itens, grupos e menus
+ * busca com filtro      → oculta itens não encontrados e reorganiza grupos e menus
+ * busca sem filtro      → mantém todos os itens visíveis e aplica somente highlight
+ * highlight padrão      → aplica classes visuais padrão quando ativado com true
+ * highlight customizado → aplica as classes CSS informadas no atributo
+ *
+ * @example
+ * <input
+ *     type="text"
+ *     class="form-control"
+ *     data-ozi-search=".item-menu"
+ *     data-ozi-search-group=".grupo-menu"
+ *     data-ozi-search-menu="pesqMenu, mm-collapse"
+ *     data-ozi-search-min="1"
+ *     data-ozi-search-words="true"
+ *     data-ozi-search-highlight="bg-dark text-white"
+ * />
  */
 
 (function ($) {

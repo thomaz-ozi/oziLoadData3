@@ -1,52 +1,69 @@
 // ==============================================================
 // Right sidebar options
 // ==============================================================
+
 /**
- * # oziLoadData
- * --------------------------------------------------------------------------
- *  Ver: (3.2)
- * data: 2026-03-06
- * --------------------------------------------------------------------------
+ * ------------------------------------------
+ * oziLoadData
+ * ------------------------------------------
+ * Ver: (3.4)
+ * 2026-03-06
+ * ------------------------------------------
+ * @description
+ * Realiza coleta, envio e tratamento de dados em diferentes modos de execução,
+ * com suporte a destino visual, integração com API e controle de comportamento.
  *
- * Modo oficial:
- * HTTP/HTTPS
+ * RECURSOS
+ * envio dinâmico       → suporta envio nos modos fetch, window e page
+ * coleta flexível      → coleta dados por grupo, item individual ou JSON
+ * resposta visual      → envia retorno para um destino específico no DOM
+ * integração com API   → facilita chamadas orientadas a dados
+ * limpeza de formulário→ limpa campos após envio quando configurado
+ * controle de clique   → evita múltiplas ações durante a requisição
+ * suporte a debug      → exibe logs detalhados para análise do fluxo
  *
- *
- * ---------------------------
- * [1] ENVIO /
- * - zldUrl: endereço de envio
- * - zldMode: modo de envio → 'fetch' (padrão), 'window', 'page'
- * - zldModeMethod: método → GET ou POST (padrão)
- * - zldModePageTarget: alvo da página → _self, _blank, _parent, _top, framename
+ * [1] ENVIO
+ * zldUrl            → define o endereço de envio
+ * zldMode           → define o modo de envio: fetch, window ou page
+ * zldModeMethod     → define o método da requisição: GET ou POST
+ * zldModePageTarget → define o alvo da página: _self, _blank, _parent, _top ou framename
  *
  * [2] COLETA DE DADOS
- * - zldCatchGroupId: coleta dados dentro do ID informado
- * - ldCatchItemName: coleta itens individuais por nome
- * - zldJson: Array | JSON string → envia dados estruturados em JSON junto com o FormData.
- * - zldCheckbox: true | false → define/auxilia o tratamento de valores de checkbox no envio.
+ * zldCatchGroupId   → coleta os dados dentro do id informado
+ * zldCatchItemName  → coleta itens individuais pelo atributo name
+ * zldJson           → envia dados estruturados em Array ou JSON string junto com o FormData
+ * zldCheckbox       → define ou auxilia o tratamento de valores de checkbox
  *
  * [3] RESPOSTA / DESTINO
- * - zldDestinyId: destino da resposta
- * - zldDestinyAppend: true → acrescenta resposta no destino
- * - zldDestinyBefore: true | false → Se true, insere a resposta antes do destino.
- * - zldExpectJson: true | false → Ajusta headers (Accept: application/json) e facilita integração com Laravel.;
- * - zldApi: true | false → define a chamada como modo API (resposta orientada a dados) Usado para endpoints que não retornam HTML para renderização.
+ * zldDestinyId      → define o destino da resposta
+ * zldDestinyAppend  → adiciona a resposta no destino informado
+ * zldDestinyBefore  → insere a resposta antes do destino informado
+ * zldExpectJson     → ajusta headers para JSON e facilita integração com Laravel
+ * zldApi            → define a chamada como modo API, voltada para resposta em dados
  *
  * [4] COMPORTAMENTO / UX
- * - zldFormBusy: true | false → Evita múltiplos cliques durante a requisição.  Quando true, desabilita o botão/trigger temporariamente.
- * - zldFormClear: true | false → limpa formulários (exceto hidden) após envio, removendo também classes de validação.
- * - zldReloadScript: true | false →   recarrega scripts da classe ld-reload (uso legado / cenários específicos)
+ * zldFormBusy       → evita múltiplos cliques durante a requisição
+ * zldFormClear      → limpa formulários após o envio, exceto campos hidden
+ * zldReloadScript   → recarrega scripts da classe ld-reload em cenários legados
  *
- * * [5] DEBUG / SUPORTE
- * - zldLog: true | false → Ativa logs de depuração no console,atributos lidos, payload, fluxo e resposta.
+ * [5] DEBUG / SUPORTE
+ * zldLog            → ativa logs de depuração no console
+ *
+ *
+ * @param {Object} [data={}] Objeto de configuração da chamada
+ * @param {Object} [attribute={}] Atributos auxiliares processados internamente
+ *
+ * @returns {*} Retorna a resposta processada conforme o modo de execução
+ *
 
- * -----------------------
- * RETORN
- * * EX: let respot = oziLoadData({...
- *  * respot.perm: 0 = acesso liberado;
+ * @example
+ * const response = oziLoadData({
+ *     zldUrl: '/rota/exemplo',
+ *     zldDestinyId: 'resultado',
+ *     zldCatchGroupId: 'formCadastro',
+ * });
  *
- * @param data
- * @param attribute
+ *
  */
 
 if (!window.__zld_inited) {
@@ -119,7 +136,7 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
             data?.ldCatchGroupId,
 
 
-        zldCatchItemName: data?.zldCatchItemName ?? data?.ldCatchItemName?? data?.ldCatchItenName,
+        zldCatchItemName: data?.zldCatchItemName ?? data?.ldCatchItemName ?? data?.ldCatchItenName,
 
         zldMode: data?.zldMode ?? data?.ldWay ?? "fetch",
         zldModeMethod: data?.zldModeMethod ?? data?.ldWayPageMethod ?? "POST",
@@ -1126,15 +1143,26 @@ function renderDependencies(root, loadData, phase) {
 
 
 /**
+ * ------------------------------------------
  * oziConf
- * --------
- * - zldProgressBarGlobalClass: classe que recebe o evento da barra de progresso global
- * - zldProgressBarGlobalOption: true|false → ativa ou desativa a barra de progresso global
- * - zldResponseValidClass: classe personalizada para indicar status válido
- * - zldResponseInvalidClass: classe personalizada para indicar status inválido
+ * ------------------------------------------
+ * Ver: (1.0)
+ * 2026-03-04
+ * ------------------------------------------
+ * @description
+ * Objeto global de configuração do OZI.
  *
+ * zldProgressBarGlobalClass  → define a classe que recebe o evento da barra de progresso global
+ * zldProgressBarGlobalOption → ativa ou desativa a barra de progresso global
+ * zldResponseValidClass      → define a classe personalizada para indicar status válido
+ * zldResponseInvalidClass    → define a classe personalizada para indicar status inválido
  *
- * @type {{}}
+ * @type {{
+ *     zldProgressBarGlobalClass: string,
+ *     zldProgressBarGlobalOption: boolean,
+ *     zldResponseValidClass: string,
+ *     zldResponseInvalidClass: string
+ * }}
  */
 
 //---------------> Configuração <------------------------
@@ -1156,17 +1184,12 @@ const zldConf = {
     },
 };
 
-const oziConfData = {
-    oziSearchHighlight: "bd-dark text-white",
-};
 
 function oziConf(conf = {}) {
     zldConf.zldProgressBarGlobalOption = conf.zldProgressBarGlobalOption ?? zldConf.zldProgressBarGlobalOption;
     zldConf.zldProgressBarGlobalClass = conf.zldProgressBarGlobalClass ?? zldConf.zldProgressBarGlobalClass;
     zldConf.zldResponseValidClass = conf.zldResponseValidClass ?? zldConf.zldResponseValidClass;
     zldConf.zldResponseInvalidClass = conf.zldResponseInvalidClass ?? zldConf.zldResponseInvalidClass;
-
-    oziConfData.oziSearchHighlight = conf.oziSearchHighlight ?? oziConfData.oziSearchHighlight;
 
 
     // Auto init
@@ -1184,4 +1207,56 @@ function oziConf(conf = {}) {
             zldConf.zldHooks.afterRender = conf.zldHooks.afterRender;
         }
     }
+}
+/**
+ * ------------------------------------------
+ * oziLoadExternalScript
+ * ------------------------------------------
+ * Ver: (0.1)
+ * 2026-03-20
+ * ------------------------------------------
+ * @description
+ * Carrega um script externo no <head> do DOM.
+ *
+ * config.tagName         → define a tag que será criada
+ * config.src             → define a URL do arquivo externo
+ * config.integrity       → define o hash de integridade do recurso
+ * config.crossOrigin     → define a política de origem do recurso
+ * config.resourceName    → define o nome exibido no console
+ * config.startAfterReady → executa startEvent() após o load e DOM pronto
+ *
+ * @param {{
+ *     tagName?: string,
+ *     src?: string,
+ *     integrity?: string,
+ *     crossOrigin?: string,
+ *     resourceName?: string,
+ *     startAfterReady?: boolean
+ * }} [config={}]
+ */
+
+
+function oziLoadExternalScript(config = {}) {
+    const script = document.createElement(config.tagName ?? "script");
+
+    script.src = config.src ?? "https://code.jquery.com/jquery-3.7.1.js";
+    script.integrity = config.integrity ?? "sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=";
+    script.crossOrigin = config.crossOrigin ?? "anonymous";
+
+    const resourceName = config.resourceName ?? "jQuery";
+    const startAfterEvent = config.startAfterEvent ?? false;
+
+    script.onload = function () {
+        console.log("Carregado:", resourceName);
+
+        $(document).ready(function () {
+            console.log("DOM pronto, " + resourceName + " disponível!");
+
+            if (startAfterEvent) {
+                startEvent();
+            }
+        });
+    };
+
+    document.head.appendChild(script);
 }
