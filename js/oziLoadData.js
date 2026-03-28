@@ -23,45 +23,52 @@
  * suporte a debug      → exibe logs detalhados para análise do fluxo
  *
  * ### [1] ENVIO
- * zldUrl            → define o endereço de envio
- * zldMode           → define o modo de envio: fetch, window ou page
- * zldModeMethod     → define o método da requisição: GET ou POST
- * zldModePageTarget → define o alvo da página: _self, _blank, _parent, _top ou framename
+ * data-zld-url            → define o endereço de envio
+ * data-zld-mode           → define o modo de envio: fetch, window ou page
+ * data-zld-mode-method     → define o método da requisição: GET ou POST
+ * data-zld-mode-page-target → define o alvo da página: _self, _blank, _parent, _top ou framename
  *
  * ### [2] COLETA DE DADOS
- * zldCatchGroupId   → coleta os dados dentro do id informado
- * zldCatchItemName  → coleta itens individuais pelo atributo name
- * zldJson           → envia dados estruturados em Array ou JSON string junto com o FormData
- * zldCheckbox       → define ou auxilia o tratamento de valores de checkbox
+ * data-zld-catch-group-id   → coleta os dados dentro do id informado
+ * data-zld-catch-item-name  → coleta itens individuais pelo atributo name
+ * data-zld-json           → envia dados estruturados em Array ou JSON string junto com o FormData
+ * data-zld-checkbox       → define ou auxilia o tratamento de valores de checkbox
  *
  * ### [3] RESPOSTA / DESTINO
- * zldDestinyId      → define o destino da resposta
- * zldDestinyAppend  → adiciona a resposta no destino informado
- * zldDestinyBefore  → insere a resposta antes do destino informado
- * zldExpectJson     → ajusta headers para JSON e facilita integração com Laravel
- * zldApi            → define a chamada como modo API, voltada para resposta em dados
+ * data-zld-destiny-id      → define o destino da resposta
+ * data-zld-destiny-append  → adiciona a resposta no destino informado
+ * data-zld-destiny-Before  → insere a resposta antes do destino informado
+ * data-zld-expect-json     → ajusta headers para JSON e facilita integração com Laravel
+ * data-zld-api            → define a chamada como modo API, voltada para resposta em dados
  *
  * ### [4] COMPORTAMENTO / UX
- * zldFormBusy       → evita múltiplos cliques durante a requisição
- * zldFormClear      → limpa formulários após o envio, exceto campos hidden
- * zldReloadScript   → recarrega scripts da classe ld-reload em cenários legados
+ * data-zld-form-busy       → evita múltiplos cliques durante a requisição
+ * data-zld-form-clear      → limpa formulários após o envio, exceto campos hidden
+ * data-zld-reload-script   → recarrega scripts da classe ld-reload em cenários legados
  *
  * ### [5] DEBUG / SUPORTE
- * zldLog            → ativa logs de depuração no console
+ * data-zld-log            → ativa logs de depuração no console
  *
  *
  * @param {Object} [data={}] Objeto de configuração da chamada
  * @param {Object} [attribute={}] Atributos auxiliares processados internamente
  *
  * @returns {*} Retorna a resposta processada conforme o modo de execução
- *
+ *      perm: 1/0,
+ *         isJson: true/false,
+ *         ok: true/false,
+ *         status: 200,
+ *         data:[...]/null
+ *         html:null
+ *         error: null/
+ *         }
 
  * @example
- * // configuração minima:
+ * // configuração mínima:
  * const response = oziLoadData({
- *     zldUrl: '/rota/exemplo',
- *     zldDestinyId: 'resultado',
- *     zldCatchGroupId: 'formCadastro',
+ *     data-zld-url: '/rota/exemplo',
+ *     data-zld-destiny-id: 'resultado',
+ *     data-zld-catch-group-id: 'formCadastro',
  * });
  *
  *
@@ -378,6 +385,16 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
         $("#logErrorLaravelOziTitle").html(status);
         $("#logErrorLaravelOzi").contents().find("body").html(html);
     };
+    const dataResponse = {
+        perm: ldValidate,
+        isJson: false,
+        ok: false,
+        status: 0,
+        data: null,
+        html: null,
+        error: null
+    };
+
     if (loadData.zldMode === "fetch") {
 
         const buildZldFetchHeaders = (method, loadData) => {
@@ -386,15 +403,11 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
                 "X-ZLD": "true",
             };
 
-            // CSRF (opcional em header, mas recomendado)
             const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             if (csrf) {
                 headers["X-CSRF-TOKEN"] = csrf;
             }
 
-            // Regra prática:
-            // GET normalmente carrega HTML (partials)
-            // POST/PUT/PATCH/DELETE normalmente esperamos JSON (validação/sucesso)
             const wantsJson =
                 loadData.zldApi === true ||
                 loadData.zldExpectJson === true ||
@@ -406,32 +419,44 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
 
             return headers;
         };
+
         const method = (loadData.zldModeMethod || "POST").toUpperCase();
         const headers = buildZldFetchHeaders(method, loadData);
 
-        fetch(v_url, method === "GET"
-            ? {method, headers}
-            : {method, headers, body: formData}
+        return fetch(
+            v_url,
+            method === "GET"
+                ? { method, headers }
+                : { method, headers, body: formData }
         )
             .then(async (response) => {
-                const contentType = String(response.headers.get('content-type') || '').toLowerCase();
-                const isJson = contentType.includes('application/json');
+                dataResponse.ok = response.ok;
+                dataResponse.status = response.status;
 
-                // NOVO: suporte a resposta JSON (Laravel + actions)
-                if (isJson) {
+                const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+                dataResponse.isJson = contentType.includes('application/json');
+
+                if (dataResponse.isJson) {
                     let json = null;
 
                     try {
                         json = await response.json();
+                        dataResponse.data = json;
                     } catch (err) {
-                        if (loadData.zldLog) console.error('zldLog| erro ao ler JSON', err);
+                        dataResponse.error = err;
+
+                        if (loadData.zldLog) {
+                            console.error('zldLog| erro ao ler JSON', err);
+                        }
+
                         renderToDestiny(`
                           <div class="alert alert-danger font-13 m-2">
                             <b>Erro:</b> Resposta JSON inválida.<br>
                             <span class="font-11 link-muted">Verifique o retorno da rota.</span>
                           </div>
                         `);
-                        return;
+
+                        return dataResponse;
                     }
 
                     if (loadData.zldLog) {
@@ -442,12 +467,10 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
                         });
                     }
 
-                    // Executa ações (toast, fechar offcanvas, recarregar modal, etc)
                     if (json && Array.isArray(json.actions)) {
-                        zldActions(json.actions, {loadData, response, json});
+                        zldActions(json.actions, { loadData, response, json });
                     }
 
-                    // Se vier erro JSON sem actions, mostra alerta simples para não "sumir" o erro
                     if (!response.ok && (!json || !Array.isArray(json.actions) || json.actions.length === 0)) {
                         renderToDestiny(`
                           <div class="alert alert-warning alert-rounded font-13 m-2">
@@ -457,33 +480,39 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
                         `);
                     }
 
-                    // Se quiser, depois você pode aplicar json.errors nos campos aqui
-                    return;
+                    return dataResponse;
                 }
 
-                // Fluxo atual HTML (mantido)
                 const html = await response.text();
+                dataResponse.html = html;
 
                 if (!response.ok) {
                     handleHttpErrorHtml(response.status, html);
-                    return;
+                    return dataResponse;
                 }
 
                 renderToDestiny(html);
+                return dataResponse;
             })
             .catch((err) => {
-                if (loadData.zldLog) console.error("LOG fetch falhou", err);
+                dataResponse.error = err;
+
+                if (loadData.zldLog) {
+                    console.error("LOG fetch falhou", err);
+                }
+
                 renderToDestiny(`
                   <div class="alert alert-danger font-13 m-2">
                     <b>Erro:</b> Não foi possível carregar.<br>
                     <span class="font-11 link-muted">Verifique sua conexão.</span>
                   </div>
                 `);
+
+                return dataResponse;
             })
             .finally(() => {
                 finishUi();
 
-                // limpeza de form, por grupo
                 if (loadData.zldFormClear) {
                     (loadData.zldCatchGroupId || []).forEach(groupId => {
                         if (!groupId) return;
@@ -500,7 +529,6 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
                     });
                 }
             });
-
     } else if (loadData.zldMode === "window") {
         let qs = "";
         formData.forEach((value, key) => {
@@ -533,7 +561,9 @@ function oziLoadData(data = null, loadAttribute = null, clickedEl = null) {
         finishUi();
     }
 
-    return {perm: ldValidate};
+    dataResponse.perm = ldValidate;
+
+    return dataResponse;
 }
 
 /**
